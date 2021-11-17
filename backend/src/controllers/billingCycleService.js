@@ -24,6 +24,7 @@ module.exports = {
             const billingCycle = await BillingCycle.create(req.body);
         
             res.json(billingCycle);
+            
         } catch (billingCycle) {
             //const message = billingCycle.errors.message;
             const parseErrors = async (nodeRestErrors) => {
@@ -48,9 +49,31 @@ module.exports = {
     },
 
     async update(req, res) {
-        const billingCycle = await BillingCycle.findByIdAndUpdate(req.params.id, req.body, {new: true, runValidators: true });
-        
-        return res.json(billingCycle);
+        try {
+            const billingCycle = 
+            await BillingCycle.findByIdAndUpdate(
+                req.params.id, req.body, {new: true, runValidators: true }
+            );
+            
+            return res.json(billingCycle);
+
+        } catch (billingCycle) {
+            const parseErrors = async (nodeRestErrors) => {
+                const errors = [];
+                await _.forIn(nodeRestErrors, error => errors.push(error.message));
+                return errors;
+            }
+            
+            //const bundle = await res.errors;
+            //console.log(billingCycle.errors)
+            if (billingCycle.errors) {
+                const errors = await parseErrors(billingCycle.errors);
+                console.log(errors)
+                return res.status(500).json({errors});
+            } else {
+                next();
+            }
+        }
     },
 
     async destroy(req, res) {
