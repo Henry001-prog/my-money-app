@@ -1,1 +1,1 @@
-# Pay Cycle API
+# Payment Cycle App API

@@ -1,1 +1,1 @@
-# Pay Cycle Application
+# Payment Cycle Application
