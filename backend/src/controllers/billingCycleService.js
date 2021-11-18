@@ -1,22 +1,33 @@
 const mongoose = require('mongoose');
 const express = require('express');
-//const errorHandler = require('../common/errorHandler');
 const _ = require('lodash');
 
 const BillingCycle = mongoose.model('BillingCycle');
 
 module.exports = {
-    async index(req, res) {
-        const { page = 1 } = req.query;
-        const billingCycles = await BillingCycle.paginate({}, { page, limit: 10 });
+    async index(req, res, next) {
+        try {
+            const { page = 1 } = req.query;
+            const billingCycles = await BillingCycle.paginate({}, { page, limit: 10 });
         
-        return res.json(billingCycles);
+            res.json(billingCycles);
+
+        } catch (error) {
+            res.status(500).json({Error: 'Não foi possível trazer os registros solicitados!'});
+            next();
+        }
     },
 
-    async show(req, res) {
-        const billingCycle = await BillingCycle.findById(req.params.id);
+    async show(req, res, next) {
+        try {
+            const billingCycle = await BillingCycle.findById(req.params.id);
 
-        return res.json(billingCycle);
+            return res.json(billingCycle);
+
+        } catch (error) {
+            res.status(500).json({Error: 'Não foi possível trazer o registro específico solicitado!'});
+            next();
+        }
     },
 
     async store(req, res, next) {
@@ -26,15 +37,12 @@ module.exports = {
             res.json(billingCycle);
             
         } catch (billingCycle) {
-            //const message = billingCycle.errors.message;
             const parseErrors = async (nodeRestErrors) => {
                 const errors = [];
                 await _.forIn(nodeRestErrors, error => errors.push(error.message));
                 return errors;
             }
             
-            //const bundle = await res.errors;
-            //console.log(billingCycle.errors)
             if (billingCycle.errors) {
                 const errors = await parseErrors(billingCycle.errors);
                 console.log(errors)
@@ -42,13 +50,10 @@ module.exports = {
             } else {
                 next();
             }
-            //console.log(res.json(billingCycle.message))
-            //const message = res.json(billingCycle);
-            //errorHandler(message);
         }
     },
 
-    async update(req, res) {
+    async update(req, res, next) {
         try {
             const billingCycle = 
             await BillingCycle.findByIdAndUpdate(
@@ -64,8 +69,6 @@ module.exports = {
                 return errors;
             }
             
-            //const bundle = await res.errors;
-            //console.log(billingCycle.errors)
             if (billingCycle.errors) {
                 const errors = await parseErrors(billingCycle.errors);
                 console.log(errors)
@@ -76,24 +79,30 @@ module.exports = {
         }
     },
 
-    async destroy(req, res) {
-        await BillingCycle.findByIdAndRemove(req.params.id);
+    async destroy(req, res, next) {
+        try {
+            await BillingCycle.findByIdAndRemove(req.params.id);
 
-        return res.send();
+            return res.json({Success: 'Registro deletado com sucesso!'});
+
+        } catch (error) {
+            res.status(500).json({Error: 'Não foi possível deletar o registro solicitado!'});
+            next();
+        }
     },
 
-    async count(req, res) {
+    async count(req, res, next) {
         BillingCycle.count((error, billingCycles) => {
             if(error) {
-                res.status(500).json({errors: [error]});
-                //res.status(500).send('Erro desconhecido!');
+                res.status(500).json({Error: 'Não foi possível trazer a quatidade de registros!'});
+                next();
             } else {
                 res.json({billingCycles});
             }
         });
     },
 
-    async summary(req, res) {
+    async summary(req, res, next) {
         BillingCycle.aggregate([{
             $project: {credit: {$sum: "$credits.value"}, debt: {$sum: "$debts.value"}}
         }, {
@@ -102,7 +111,8 @@ module.exports = {
             $project: {_id: 0, credit: 1, debt: 1}
         }], (error, result) => {
             if(error) {
-                res.status(500).json({errors: [error]});
+                res.status(500).json({Error: 'Não foi possível trazer o sumário!'});
+                next();
                 //res.status(500).send('Erro desconhecido!');
             } else {
                 res.json(result[0] || { credit: 0, debt: 0 });

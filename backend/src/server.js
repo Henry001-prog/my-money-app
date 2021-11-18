@@ -2,15 +2,13 @@ const port = 3003;
 
 const express = require('express');
 const server = express();
-//const cors = require('cors');
+const allowCors = require('./config/cors');
 const mongoose = require('mongoose');
 const requireDir = require('require-dir');
 
-//const router = require('./routes');
-
 server.use(express.urlencoded({ extended: true}));
 server.use(express.json());
-
+server.use(allowCors);
 
 runDB();
 
