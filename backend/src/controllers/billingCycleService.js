@@ -113,7 +113,6 @@ module.exports = {
             if(error) {
                 res.status(500).json({Error: 'Não foi possível trazer o sumário!'});
                 next();
-                //res.status(500).send('Erro desconhecido!');
             } else {
                 res.json(result[0] || { credit: 0, debt: 0 });
             }
