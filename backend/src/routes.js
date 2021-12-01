@@ -1,7 +1,5 @@
 const express = require('express');
 
-
-// Definir URL base para todas as rotas
 const router = express.Router();
 const auth = require('./config/auth');
 //server.use('/api', router);
