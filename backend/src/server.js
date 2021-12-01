@@ -29,7 +29,7 @@ async function runDB() {
 
 requireDir('./models');
 
-server.use('/api', require('./routes'));
+server.use(require('./routes'));
 
 server.listen(port, function() {
     console.log(`Backend is running on port ${port}.`);
